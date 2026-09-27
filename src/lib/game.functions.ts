@@ -487,3 +487,25 @@ export const heartbeat = createServerFn({ method: "POST" })
       .eq("id", data.playerId);
     return { ok: true };
   });
+
+function shuffleArr<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+
+// İki takım için ayrı karışık sıralar üretip araya dizer: [t1, t2, t1, t2, ...].
+function buildTeamOrder(ids: string[]): string[] {
+  const a = shuffleArr(ids);
+  let b = shuffleArr(ids);
+  if (ids.length > 1) {
+    for (let t = 0; t < 20 && b.some((x, i) => x === a[i]); t++) b = shuffleArr(ids);
+    if (b.some((x, i) => x === a[i])) b = a.map((_, i) => a[(i + 1) % a.length]!);
+  }
+  const out: string[] = [];
+  for (let i = 0; i < a.length; i++) out.push(a[i]!, b[i]!);
+  return out;
+}
