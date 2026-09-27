@@ -497,14 +497,12 @@ function shuffleArr<T>(arr: T[]): T[] {
   return a;
 }
 
-// İki takım için ayrı karışık sıralar üretip araya dizer: [t1, t2, t1, t2, ...].
+void shuffleArr;
+// Karıştırma yok: sorular setteki sırayla gelir. Takım 2 bir soru kaydırılmış sırayla başlar
+// ki aynı anda iki takıma aynı soru gelmesin. Düzen: [t1, t2, t1, t2, ...].
 function buildTeamOrder(ids: string[]): string[] {
-  const a = shuffleArr(ids);
-  let b = shuffleArr(ids);
-  if (ids.length > 1) {
-    for (let t = 0; t < 20 && b.some((x, i) => x === a[i]); t++) b = shuffleArr(ids);
-    if (b.some((x, i) => x === a[i])) b = a.map((_, i) => a[(i + 1) % a.length]!);
-  }
+  const a = [...ids];
+  const b = ids.length > 1 ? a.map((_, i) => a[(i + 1) % a.length]!) : [...ids];
   const out: string[] = [];
   for (let i = 0; i < a.length; i++) out.push(a[i]!, b[i]!);
   return out;
