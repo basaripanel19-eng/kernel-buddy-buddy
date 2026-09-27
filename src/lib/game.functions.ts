@@ -102,10 +102,8 @@ export const createRoom = createServerFn({ method: "POST" })
       .slice(0, QUESTION_COUNT * 2);
   }
 
-  // Sorular her zaman karıştırılır; her turda iki takıma da FARKLI soru düşer
-  // (çift sıra 1. takıma, tek sıra 2. takıma) ve hiçbir soru tekrar etmez.
-  questionIds = questionIds.sort(() => Math.random() - 0.5);
-  if (questionIds.length % 2 === 1) questionIds = questionIds.slice(0, -1);
+  // Her takım setteki TÜM soruları kendi karışık sırasıyla alır.
+  questionIds = buildTeamOrder(questionIds);
 
   for (let attempt = 0; attempt < 6; attempt++) {
     const code = makeCode();
@@ -407,11 +405,7 @@ export const controlRoom = createServerFn({ method: "POST" })
 
     if (data.action === "shuffle") {
       if (room.status === "PLAYING") throw new Error("Oyun sırasında karıştırılamaz");
-      const shuffled = [...questionIds];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
-      }
+      const shuffled = buildTeamOrder(Array.from(new Set(questionIds)));
       await supabase.from("rooms").update({ question_ids: shuffled }).eq("id", room.id);
       return { ok: true };
     }
